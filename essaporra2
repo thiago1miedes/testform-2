@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coleta de Informações para Design – EAD Plataforma</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Rajdhani:wght@600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --violeta: #7c038e; --violeta-sat: #9600ff;
+    --black-violeta: #240342; --magenta: #fe00fe;
+    --bg: #f5f0f7; --card-bg: #ffffff;
+    --text: #240342; --muted: #6b5c75; --border: #e0d0e8;
+  }
+  body { font-family: 'Lato', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+
+  .header { width: 100%; background: var(--black-violeta); padding: 28px 0 0; display: flex; flex-direction: column; align-items: center; }
+  .header svg { width: 140px; height: auto; }
+  .header-title { font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: var(--magenta); margin-top: 14px; text-align: center; padding: 0 16px; }
+  .progress-bar-wrap { width: 100%; margin-top: 24px; background: rgba(255,255,255,0.08); height: 4px; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--violeta-sat), var(--magenta)); transition: width 0.5s cubic-bezier(.4,0,.2,1); }
+
+  .step-info { width: 100%; max-width: 700px; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; margin: 32px auto 0; }
+  .step-label { font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--violeta); }
+  .step-count { font-size: 13px; color: var(--muted); }
+
+  .card { background: var(--card-bg); border-radius: 20px; padding: 40px; width: 100%; max-width: 700px; margin: 16px 24px 0; box-shadow: 0 2px 24px rgba(124,3,142,0.07); animation: slideUp 0.4s cubic-bezier(.4,0,.2,1) both; }
+  @keyframes slideUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+  .card-icon { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--violeta-sat), var(--violeta)); display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 20px; }
+  .card h2 { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; color: var(--black-violeta); line-height: 1.25; margin-bottom: 8px; }
+  .card .desc { font-size: 14px; color: var(--muted); line-height: 1.75; margin-bottom: 24px; }
+  .card .desc strong { color: var(--violeta); }
+
+  label.field-label { display: block; font-size: 13px; font-weight: 700; color: var(--violeta); letter-spacing: 0.5px; margin-bottom: 4px; margin-top: 22px; }
+  .field-hint { font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 8px; margin-top: 3px; }
+
+  input[type="text"], input[type="email"], input[type="tel"], input[type="url"], textarea {
+    width: 100%; border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 16px;
+    font-family: 'Lato', sans-serif; font-size: 15px; color: var(--text); background: #faf8fc;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s; resize: vertical;
+  }
+  input:focus, textarea:focus { border-color: var(--violeta-sat); box-shadow: 0 0 0 3px rgba(150,0,255,0.12); }
+  textarea { min-height: 90px; }
+
+  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px; }
+  .opt-btn { border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 16px; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; font-family: 'Lato', sans-serif; font-size: 14px; color: var(--text); background: #faf8fc; transition: border-color 0.2s, background 0.2s, transform 0.15s; user-select: none; }
+  .opt-btn:hover { border-color: var(--violeta-sat); background: #f5eeff; transform: translateY(-1px); }
+  .opt-btn.selected { border-color: var(--violeta-sat); background: #f0e6ff; color: var(--violeta); font-weight: 700; }
+  .opt-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; transition: border-color 0.2s, background 0.2s; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .opt-btn.selected .opt-dot { border-color: var(--violeta-sat); background: var(--violeta-sat); }
+  .opt-dot::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: white; display: none; }
+  .opt-btn.selected .opt-dot::after { display: block; }
+
+  .arte-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border); }
+  .arte-row:last-child { border-bottom: none; }
+  .arte-info { flex: 1; }
+  .arte-name { font-size: 14px; color: var(--text); font-weight: 700; }
+  .arte-desc { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+  .counter { display: flex; align-items: center; gap: 10px; flex-shrink: 0; margin-left: 12px; }
+  .counter-btn { width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--border); background: #faf8fc; font-size: 20px; font-weight: 700; color: var(--violeta); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, border-color 0.15s; line-height: 1; }
+  .counter-btn:hover { background: #f0e6ff; border-color: var(--violeta-sat); }
+  .counter-val { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700; color: var(--black-violeta); min-width: 26px; text-align: center; }
+
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+  .badge-fixed { background: #e8d5ff; color: var(--violeta); }
+  .badge-free  { background: #ffe0ff; color: #9900aa; }
+
+  .section-title { font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 700; color: var(--violeta); letter-spacing: 1px; text-transform: uppercase; margin-top: 28px; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 2px solid var(--border); }
+
+  .hint-box { border-radius: 12px; padding: 14px 18px; font-size: 13px; line-height: 1.65; margin-top: 12px; }
+  .hint-box.purple { background: #f5eeff; color: var(--violeta); }
+  .hint-box.pink   { background: #fff0ff; color: #7a0082; }
+  .hint-box.red    { background: #fff0f0; color: #7a0000; border: 1.5px solid #ffcccc; }
+  .hint-box strong { color: var(--black-violeta); }
+  .hint-box.red strong { color: #5a0000; }
+
+  .preview-img-wrap { border-radius: 14px; overflow: hidden; border: 1.5px solid var(--border); margin-top: 14px; background: #f0e6ff; }
+  .preview-img-wrap img { width: 100%; display: block; }
+  .preview-img-label { font-size: 11px; font-weight: 700; text-align: center; padding: 8px; background: var(--black-violeta); color: white; letter-spacing: 1px; text-transform: uppercase; }
+
+  .nav-wrap { width: 100%; max-width: 700px; margin: 20px 24px 60px; display: flex; justify-content: space-between; gap: 12px; }
+  .btn { flex: 1; padding: 16px 24px; border-radius: 14px; font-family: 'Lato', sans-serif; font-size: 16px; font-weight: 900; cursor: pointer; border: none; transition: transform 0.15s, box-shadow 0.15s; letter-spacing: 0.4px; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active { transform: scale(0.98); }
+  .btn-back { background: transparent; border: 1.5px solid var(--border); color: var(--muted); max-width: 130px; }
+  .btn-back:hover { border-color: var(--violeta); color: var(--violeta); }
+  .btn-next { background: linear-gradient(135deg, var(--violeta-sat), var(--violeta)); color: white; box-shadow: 0 6px 20px rgba(124,3,142,0.35); }
+  .btn-next:hover { box-shadow: 0 8px 28px rgba(124,3,142,0.5); }
+  .btn-submit { background: linear-gradient(135deg, var(--magenta), var(--violeta-sat)); color: white; box-shadow: 0 6px 20px rgba(254,0,254,0.35); }
+
+  .req { color: var(--magenta); margin-left: 2px; }
+  .hidden { display: none !important; }
+
+  #artesLivresSection { transition: opacity 0.3s; }
+  #artesLivresSection.locked { opacity: 0.35; pointer-events: none; }
+
+  .success-wrap { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 48px 32px; }
+  .success-icon { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--violeta-sat), var(--magenta)); display: flex; align-items: center; justify-content: center; font-size: 36px; margin-bottom: 28px; }
+  .success-wrap h2 { font-family: 'Bebas Neue', sans-serif; font-size: 42px; letter-spacing: 2px; color: var(--black-violeta); margin-bottom: 12px; }
+  .success-wrap p { font-size: 15px; color: var(--muted); line-height: 1.7; max-width: 420px; }
+
+  @media (max-width: 540px) {
+    .card { padding: 28px 20px; border-radius: 16px; }
+    .options-grid { grid-template-columns: 1fr; }
+    .nav-wrap { flex-direction: column-reverse; }
+    .btn-back { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 878.32 340.24">
+    <defs><style>.cls-1{fill:#ffffff;fill-rule:evenodd;}</style></defs>
+    <g>
+      <path class="cls-1" d="M406.38,105.9c-21.04,14.05-36.74,32.49-47.08,55.32-3.57,8.08-6.33,16.33-8.29,24.76-1.96,8.43-2.94,17.21-2.94,26.34s.98,17.91,2.94,26.34c1.96,8.43,4.73,16.68,8.29,24.76,10.34,22.48,26.04,40.83,47.08,55.05,21.04,14.22,44.94,21.34,71.69,21.34,10.35,0,20.15-1.05,29.43-3.16,8.92-2.11,17.65-5.09,26.22-8.96,1.43-.7,2.85-1.49,4.28-2.37.96-.59,1.99-1.14,3.11-1.65.96-.44,2.11-.11,2.72.74,7.37,10.26,17.02,15.4,28.95,15.4,8.92,0,16.94-3.34,24.08-10.01,7.13-6.67,10.7-14.75,10.7-24.23v-93.24c0-16.15-2.94-31.52-8.83-46.1-5.88-14.57-13.91-27.57-24.07-38.98-10.16-11.41-22.29-20.81-36.38-28.18-14.09-7.38-29.16-11.94-45.21-13.7-2.5-.35-4.91-.53-7.22-.53h-7.76c-26.75,0-50.65,7.03-71.69,21.07h0ZM436.07,170.96c5.53-5.44,11.86-9.75,18.99-12.91,7.13-3.16,14.62-4.74,22.47-4.74s15.42,1.58,22.74,4.74c7.31,3.16,13.73,7.46,19.26,12.91,5.53,5.44,9.89,11.76,13.1,18.96,3.21,7.2,4.82,14.66,4.82,22.39,0,8.43-1.6,16.24-4.82,23.44-3.21,7.2-7.49,13.43-12.84,18.7-5.35,5.27-11.68,9.4-18.99,12.38-7.31,2.99-15.07,4.48-23.27,4.48-7.49,0-14.8-1.58-21.94-4.74-7.13-3.16-13.46-7.37-18.99-12.64-5.53-5.27-9.99-11.5-13.37-18.7-3.39-7.2-5.08-14.84-5.08-22.92s1.61-15.19,4.82-22.39c3.21-7.2,7.58-13.52,13.11-18.96Z"/>
+      <path class="cls-1" d="M699.09,95.1c-15.69,6.85-29.51,16.07-41.46,27.66-11.95,11.59-21.4,25.11-28.35,40.56-6.95,15.45-10.43,31.78-10.43,48.99s3.57,34.07,10.7,49.52c7.13,15.45,16.68,28.98,28.62,40.56,11.95,11.58,25.77,20.73,41.46,27.4,15.69,6.67,32.1,10.01,49.22,10.01s33.53-3.43,49.22-10.27c15.69-6.84,29.52-16.07,41.46-27.66,11.94-11.59,21.4-25.11,28.35-40.56,6.95-15.45,10.43-31.79,10.43-48.99V38.99c0-10.17-3.48-18.53-10.43-25.02-6.95-6.5-15.07-9.74-24.35-9.74-4.64,0-9.09.88-13.37,2.63-4.28,1.76-8.02,4.21-11.23,7.38-3.21,3.16-5.8,6.85-7.76,11.06-1.96,4.21-2.94,8.61-2.94,13.17v57.02c0,1.62-1.73,2.67-3.21,1.95-17.3-8.41-36.03-12.61-56.18-12.61-17.48,0-34.06,3.43-49.76,10.27h0ZM725.57,158.05c7.31-3.15,15.07-4.74,23.27-4.74s15.34,1.49,22.47,4.48c7.13,2.98,13.47,7.11,18.99,12.38,5.53,5.27,9.9,11.5,13.11,18.7,3.2,7.2,4.82,15.01,4.82,23.44s-1.61,15.63-4.82,22.65c-3.21,7.02-7.59,13.26-13.11,18.7-5.52,5.44-11.86,9.75-18.99,12.91-7.13,3.16-14.62,4.74-22.47,4.74s-15.96-1.59-23.27-4.74c-7.31-3.15-13.74-7.38-19.26-12.64-5.53-5.26-9.91-11.5-13.11-18.7-3.2-7.2-4.82-14.84-4.82-22.92s1.61-15.19,4.82-22.39c3.2-7.2,7.58-13.53,13.11-18.96,5.52-5.44,11.95-9.75,19.26-12.91Z"/>
+      <path class="cls-1" d="M47.48,180.91c37.36-63.94,91.21-109.24,160.21-137.43.87-.36,1.88-.12,2.5.58,11.73,13.25,23.45,26.5,35.18,39.76.99,1.12.57,2.86-.82,3.42-68.05,27.84-120.83,72.94-158.08,135.6-.76,1.28-2.57,1.46-3.56.34-11.73-13.26-23.45-26.51-35.18-39.76-.62-.7-.72-1.7-.25-2.51ZM37.02,176.83C75.87,109.66,132.45,62,204.93,32.74c4.49-1.81,9.44-.66,12.63,2.94l1.82,2.05c1.08,1.22,3.09.89,3.7-.62l13.9-34.15c.67-1.64-.83-3.33-2.57-2.91l-82.58,20.22-82.13,20.11c-2.9.71-5.28,2.75-6.39,5.48l-31.49,77.35L.16,201.01c-.67,1.64.83,3.33,2.57,2.91l36.26-8.88c1.59-.39,2.21-2.3,1.13-3.52l-1.82-2.05c-3.17-3.58-3.67-8.51-1.28-12.64Z"/>
+      <path class="cls-1" d="M333.05,220.61c-4.15-5.31-9.25-9.13-15.3-11.38-6.05-2.25-12.47-2.82-19.11-1.7-6.63,1.12-12.93,4.07-18.36,9.11-2.82,2.61-4.86,5.52-6.26,8.37-1.39,2.85-2.66,5.85-3.79,8.94-1.13,3.09-2.72,6.42-4.74,9.87-2.02,3.44-5.1,7.23-9.09,11.16-13.77,13.57-31.2,18.08-52.17,13.52-1.69-.37-2.29-2.44-1.06-3.65l97.98-96.25c7.27-7.14,11.94-14.7,13.08-23.27,1.14-8.56-1.58-16.12-8.11-22.54-12.08-11.9-26.19-20.84-42.15-26.68-1.4-.51-2.81-1-4.22-1.47s-3.06-.17-4.25.81c-.99.82-2.14,1.49-3.42,2.01-67.76,27.08-119.91,71.63-156.34,134.11-1.17,2-2.75,3.56-4.65,4.6-1.62.89-2.49,2.68-2.11,4.47.66,3.11,1.44,6.2,2.33,9.29,1.17,4.07,2.55,8.12,4.12,12.14,1.59,4.07,3.37,8,5.34,11.81.49.95,1,1.89,1.51,2.83,1.09,1.97.74,4.41-.86,5.99l-.66.65-16.28,16.03c-1.71,1.68-1.71,4.44,0,6.12l16.28,16.03,15.61,15.37c3.62,3.56,9.53,3.56,13.15,0l13.27-13.07c1.58-1.55,3.99-1.89,5.92-.81,5.16,2.9,10.58,5.46,16.24,7.67,16.21,6.34,32.89,9.54,49.73,9.55,16.85.01,33.4-3.02,49.38-9.07,15.98-6.04,29.76-15.42,41.46-27.71,9-9.45,16.74-19.34,22.92-29.59,6.18-10.25,10.58-21.53,11.2-33.7.39-7.64-2.44-14.25-6.6-19.56ZM156.98,195.27c2.52-8.64,7.5-16.65,14.78-23.82,7.02-6.93,15.09-11.74,24.04-14.31,8.02-2.31,17.33-2.2,27.88.35,1.65.4,2.22,2.45,1.01,3.63l-7.67,7.54-9.44,9.27-46.43,45.62c-1.21,1.18-3.28.63-3.68-1-2.59-10.4-2.75-19.53-.48-27.28Z"/>
+    </g>
+  </svg>
+  <div class="header-title">Coleta de Informações para Design</div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:14%"></div></div>
+</div>
+
+<div class="step-info">
+  <span class="step-label" id="stepLabel">Identificação</span>
+  <span class="step-count" id="stepCount">Etapa 1 de 7</span>
+</div>
+
+<!-- STEP 1 -->
+<div class="card" id="step1">
+  <div class="card-icon">👋</div>
+  <h2>Olá! Estamos ansiosos em começar a trabalhar com você 🌟</h2>
+  <p class="desc">Para garantir que possamos oferecer um serviço de alta qualidade e atender a todas as suas expectativas, precisamos de algumas informações básicas. Preencha as seções abaixo com o máximo de detalhes que puder.</p>
+
+  <label class="field-label">Nome Completo <span class="req">*</span></label>
+  <p class="field-hint">Informe seu nome completo para que possamos personalizar o atendimento.</p>
+  <input type="text" id="nome" placeholder="Seu nome completo">
+
+  <label class="field-label">Domínio da Plataforma <span class="req">*</span></label>
+  <p class="field-hint">Informe o endereço da sua plataforma EAD. É o link que seus alunos usam para acessar. Exemplo: <em>minhaescola.eadplataforma.com</em></p>
+  <input type="url" id="dominio" placeholder="minhaescola.eadplataforma.com">
+
+  <label class="field-label">Site próprio (caso possua)</label>
+  <p class="field-hint">Se você tiver um site próprio além da plataforma EAD, informe-o aqui. Isso nos ajuda a entender a identidade visual que você já utiliza.</p>
+  <input type="url" id="site" placeholder="https://seusite.com.br">
+
+  <label class="field-label">Telefone de Contato <span class="req">*</span></label>
+  <p class="field-hint">Informe um número de telefone ou WhatsApp para que nossa equipe possa entrar em contato se necessário.</p>
+  <input type="tel" id="telefone" placeholder="(00) 00000-0000">
+</div>
+
+<!-- STEP 2 -->
+<div class="card hidden" id="step2">
+  <div class="card-icon">🎨</div>
+  <h2>Escolha das Artes</h2>
+  <p class="desc">
+    Seu plano inclui <strong>artes fixas</strong> (já inclusas e não substituíveis) e <strong>artes livres</strong> (você escolhe quais quer). Confira a imagem abaixo para entender onde cada arte aparece na sua plataforma antes de escolher.
+  </p>
+
+  <div class="preview-img-wrap">
+    <div class="preview-img-label">Onde cada arte será aplicada na plataforma</div>
+    <img src="https://drive.google.com/thumbnail?id=1f45jDXccagw7pYTXqsQvmNQTfe0xajgA&sz=w800" alt="Mapa de artes da plataforma" onerror="this.parentElement.innerHTML='<div style=\'padding:20px;text-align:center;color:#7c038e;font-size:13px\'>Imagem de referência disponível no seu painel EAD</div>'">
+  </div>
+
+  <div class="section-title" style="margin-top:28px">Artes Fixas <span class="badge badge-fixed">já inclusas no plano</span></div>
+  <p class="field-hint" style="margin-top:0;margin-bottom:14px">Essas artes já fazem parte do seu pacote e serão criadas automaticamente — você não precisa escolhê-las. Elas não podem ser substituídas por outros tipos.</p>
+
+  <div class="arte-row">
+    <div class="arte-info">
+      <div class="arte-name">Banner – Página Principal</div>
+      <div class="arte-desc">A imagem grande que aparece no topo da sua plataforma. É a primeira coisa que o aluno vê ao entrar.</div>
+    </div>
+    <span style="font-size:13px;color:var(--muted);flex-shrink:0;margin-left:12px">1 unidade</span>
+  </div>
+  <div class="arte-row">
+    <div class="arte-info">
+      <div class="arte-name">Tela de Login</div>
+      <div class="arte-desc">A tela onde o aluno digita e-mail e senha para entrar na plataforma. Será personalizada com a identidade visual da sua marca.</div>
+    </div>
+    <span style="font-size:13px;color:var(--muted);flex-shrink:0;margin-left:12px">1 unidade</span>
+  </div>
+  <div class="arte-row">
+    <div class="arte-info">
+      <div class="arte-name">Capa de Aula</div>
+      <div class="arte-desc">A imagem em miniatura que identifica cada aula dentro do curso. Aparece na listagem de aulas.</div>
+    </div>
+    <span style="font-size:13px;color:var(--muted);flex-shrink:0;margin-left:12px">1 unidade</span>
+  </div>
+  <div class="arte-row">
+    <div class="arte-info">
+      <div class="arte-name">Certificado</div>
+      <div class="arte-desc">O documento que o aluno recebe ao concluir o curso. Criado com as cores e identidade da sua marca.</div>
+    </div>
+    <span style="font-size:13px;color:var(--muted);flex-shrink:0;margin-left:12px">1 unidade</span>
+  </div>
+  <div class="arte-row" style="border-bottom:none">
+    <div class="arte-info">
+      <div class="arte-name">Ícones de Categoria</div>
+      <div class="arte-desc">Ícones que identificam cada categoria de cursos na sua plataforma. Ex: "Marketing", "Finanças", "Saúde". Limite de até 10 ícones.</div>
+    </div>
+    <span style="font-size:13px;color:var(--muted);flex-shrink:0;margin-left:12px">até 10</span>
+  </div>
+
+  <div class="section-title" style="margin-top:28px">Arte Animada</div>
+  <p class="field-hint" style="margin-top:0;margin-bottom:12px">
+    Você pode optar por trocar suas 3 artes livres por <strong>1 arte animada</strong>. Uma arte animada é uma imagem em movimento (como um vídeo curto), muito mais chamativa — ideal para o banner principal da plataforma.<br>
+    <strong>Atenção:</strong> se optar pela arte animada, as artes livres abaixo serão bloqueadas, pois é uma troca — não é possível ter ambas.
+  </p>
+  <div class="options-grid">
+    <div class="opt-btn" onclick="selectAnimada('sim',this)"><span class="opt-dot"></span>
+      <div><div style="font-weight:700">Quero 1 arte animada</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Troco as 3 artes livres por 1 animada</div></div>
+    </div>
+    <div class="opt-btn" onclick="selectAnimada('nao',this)"><span class="opt-dot"></span>
+      <div><div style="font-weight:700">Manter artes normais</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Quero escolher minhas 3 artes livres</div></div>
+    </div>
+  </div>
+
+  <div id="artesLivresSection">
+    <div class="section-title" style="margin-top:28px">Artes Livres <span class="badge badge-free">escolha até 3</span></div>
+    <p class="field-hint" style="margin-top:0;margin-bottom:14px">Escolha até 3 tipos de arte para adicionar ao seu pacote. Use os botões + e − para indicar a quantidade de cada tipo. O total máximo entre todos os tipos é 3 unidades.<br><em>Exemplo: 2 capas de produto + 1 banner de categoria = 3 no total.</em></p>
+
+    <div class="arte-row">
+      <div class="arte-info">
+        <div class="arte-name">Banner de Produto</div>
+        <div class="arte-desc">Banner usado para divulgar um produto ou curso específico dentro da plataforma. Aparece geralmente na página do produto.</div>
+      </div>
+      <div class="counter">
+        <button class="counter-btn" onclick="changeArte('Banner de produto',-1)">−</button>
+        <span class="counter-val" id="val-Banner de produto">0</span>
+        <button class="counter-btn" onclick="changeArte('Banner de produto',1)">+</button>
+      </div>
+    </div>
+    <div class="arte-row">
+      <div class="arte-info">
+        <div class="arte-name">Capa de Produto</div>
+        <div class="arte-desc">Imagem de capa que representa um produto ou curso na listagem da plataforma. O aluno vê essa imagem antes de entrar no produto.</div>
+      </div>
+      <div class="counter">
+        <button class="counter-btn" onclick="changeArte('Capa de produto',-1)">−</button>
+        <span class="counter-val" id="val-Capa de produto">0</span>
+        <button class="counter-btn" onclick="changeArte('Capa de produto',1)">+</button>
+      </div>
+    </div>
+    <div class="arte-row">
+      <div class="arte-info">
+        <div class="arte-name">Capa de Produto – Estilo Card</div>
+        <div class="arte-desc">Capa em formato de card (retângulo menor), ideal para plataformas com layout estilo catálogo ou Netflix, onde os cursos aparecem em fileiras.</div>
+      </div>
+      <div class="counter">
+        <button class="counter-btn" onclick="changeArte('Capa de produto – card',-1)">−</button>
+        <span class="counter-val" id="val-Capa de produto – card">0</span>
+        <button class="counter-btn" onclick="changeArte('Capa de produto – card',1)">+</button>
+      </div>
+    </div>
+    <div class="arte-row">
+      <div class="arte-info">
+        <div class="arte-name">Capa de Curso</div>
+        <div class="arte-desc">Imagem principal que representa o curso. Similar à capa de produto, mas voltada especificamente para cursos com múltiplos módulos.</div>
+      </div>
+      <div class="counter">
+        <button class="counter-btn" onclick="changeArte('Capa de curso',-1)">−</button>
+        <span class="counter-val" id="val-Capa de curso">0</span>
+        <button class="counter-btn" onclick="changeArte('Capa de curso',1)">+</button>
+      </div>
+    </div>
+    <div class="arte-row">
+      <div class="arte-info">
+        <div class="arte-name">Banner de Categoria</div>
+        <div class="arte-desc">Banner para identificar uma categoria de cursos na plataforma. Ex: Banner para a categoria "Cursos de Marketing Digital".</div>
+      </div>
+      <div class="counter">
+        <button class="counter-btn" onclick="changeArte('Banner de categoria',-1)">−</button>
+        <span class="counter-val" id="val-Banner de categoria">0</span>
+        <button class="counter-btn" onclick="changeArte('Banner de categoria',1)">+</button>
+      </div>
+    </div>
+    <div class="arte-row" style="border-bottom:none">
+      <div class="arte-info">
+        <div class="arte-name">Capa de Aula Extra</div>
+        <div class="arte-desc">Caso queira mais de um modelo de capa de aula além do fixo (ex: um modelo diferente para cada módulo do curso), escolha essa opção.</div>
+      </div>
+      <div class="counter">
+        <button class="counter-btn" onclick="changeArte('Capa de aula extra',-1)">−</button>
+        <span class="counter-val" id="val-Capa de aula extra">0</span>
+        <button class="counter-btn" onclick="changeArte('Capa de aula extra',1)">+</button>
+      </div>
+    </div>
+
+    <div id="artes-total-display" style="margin-top:16px;padding:12px 16px;border-radius:10px;background:#f5eeff;font-size:14px;color:var(--violeta);font-weight:700;display:flex;justify-content:space-between;align-items:center;">
+      <span>Total de artes livres selecionadas:</span>
+      <span id="artesTotal">0 / 3</span>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="card hidden" id="step3">
+  <div class="card-icon">✍️</div>
+  <h2>Textos inclusos nas artes</h2>
+  <p class="desc">
+    Aqui você deve informar os textos que devem aparecer em cada tipo de arte. Por exemplo: o nome do seu curso, uma frase de impacto, o nome de um produto, o nome das suas categorias etc.<br><br>
+    Especifique <strong>qual texto vai em qual arte</strong>. Quanto mais específico, melhor o resultado final.
+  </p>
+
+  <div class="hint-box red" style="margin-bottom:18px">
+    ⚠️ <strong>Atenção:</strong> Caso os textos não sejam preenchidos, ou não seja fornecida alguma informação essencial — como o tema ou conteúdo para trabalharmos — <strong>não daremos início ao desenvolvimento do design</strong>. Preencha com o máximo de detalhes possível.
+  </div>
+
+  <div class="hint-box purple" style="margin-bottom:18px">
+    <strong>Exemplo de preenchimento:</strong><br>
+    Banner principal: Aprenda Marketing Digital do Zero e Transforme Sua Vida<br>
+    Capa do curso: Tráfego Pago com Resultados Reais<br>
+    Capa do produto: Mentoria Exclusiva — Vagas Limitadas<br>
+    Ícones de categoria: Marketing Digital / Finanças / Redes Sociais
+  </div>
+
+  <label class="field-label">Textos por tipo de arte <span class="req">*</span></label>
+  <p class="field-hint">Informe o texto de cada arte que faz parte do seu pacote. Use o modelo do exemplo acima como referência.</p>
+  <textarea id="textos" style="min-height:150px" placeholder="Banner principal: [seu texto aqui]&#10;Capa do curso: [seu texto aqui]&#10;Capa do produto: [seu texto aqui]&#10;Ícones de categoria: [nome 1] / [nome 2] / [nome 3]&#10;..."></textarea>
+</div>
+
+<!-- STEP 4 -->
+<div class="card hidden" id="step4">
+  <div class="card-icon">🖥️</div>
+  <h2>Tema da plataforma e tela de login</h2>
+  <p class="desc">Agora vamos definir o visual geral da sua plataforma. Confira as imagens de referência de cada opção antes de escolher — elas mostram exatamente como ficará para seus alunos.</p>
+
+  <div class="section-title">Tema da Plataforma <span class="req">*</span></div>
+  <p class="field-hint" style="margin-top:0;margin-bottom:10px">
+    O <strong>Tema Padrão</strong> exibe os cursos em uma lista com banners horizontais — layout mais tradicional e organizado.<br>
+    O <strong>Tema Netflix</strong> exibe os cursos em carrosséis (fileiras) com cards clicáveis, visual mais moderno e dinâmico, parecido com serviços de streaming.
+  </p>
+  <div class="preview-img-wrap" style="margin-bottom:14px">
+    <div class="preview-img-label">Comparativo: Tema Padrão vs Tema Netflix</div>
+    <img src="https://drive.google.com/thumbnail?id=1IKVS6kPxkAQNczJwsXVpX0snGTVD2Aeq&sz=w800" alt="Temas da plataforma" onerror="this.parentElement.innerHTML='<div style=\'padding:20px;text-align:center;color:#7c038e;font-size:13px\'>Imagem disponível no seu painel EAD Plataforma</div>'">
+  </div>
+  <div class="options-grid">
+    <div class="opt-btn" onclick="selectOpt('tema','padrao',this)"><span class="opt-dot"></span>
+      <div><div style="font-weight:700">Modelo Padrão</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Layout clássico com banners horizontais</div></div>
+    </div>
+    <div class="opt-btn" onclick="selectOpt('tema','netflix',this)"><span class="opt-dot"></span>
+      <div><div style="font-weight:700">Modelo Netflix</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Cards em carrossel estilo streaming</div></div>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:28px">Tela de Login <span class="req">*</span></div>
+  <p class="field-hint" style="margin-top:0;margin-bottom:10px">
+    A tela de login é a primeira tela que o aluno vê ao tentar acessar a plataforma — onde ele digita e-mail e senha.<br>
+    <strong>Central:</strong> os campos de login ficam no centro da tela, com a identidade visual ao fundo.<br>
+    <strong>Lateral (padrão):</strong> os campos ficam à esquerda da tela, com uma imagem ou cor ocupando o lado direito.
+  </p>
+  <div class="preview-img-wrap" style="margin-bottom:14px">
+    <div class="preview-img-label">Comparativo: Login Central vs Login Lateral</div>
+    <img src="https://drive.google.com/thumbnail?id=1_t9_PDJlc6ncFVuKVu7VHFGnPx2Cy6iN&sz=w800" alt="Modelos de tela de login" onerror="this.parentElement.innerHTML='<div style=\'padding:20px;text-align:center;color:#7c038e;font-size:13px\'>Imagem disponível no seu painel EAD Plataforma</div>'">
+  </div>
+  <div class="options-grid">
+    <div class="opt-btn" onclick="selectOpt('login','central',this)"><span class="opt-dot"></span>
+      <div><div style="font-weight:700">Central</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Campos de login ao centro da tela</div></div>
+    </div>
+    <div class="opt-btn" onclick="selectOpt('login','lateral',this)"><span class="opt-dot"></span>
+      <div><div style="font-weight:700">Lateral (padrão)</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Campos de login à esquerda da tela</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 5 -->
+<div class="card hidden" id="step5">
+  <div class="card-icon">🏷️</div>
+  <h2>Fale sobre sua marca</h2>
+  <p class="desc">Quanto mais você nos contar sobre sua marca e o que ela representa, mais o design vai refletir a sua identidade. Caso possua referências visuais, indique os sites correspondentes.</p>
+
+  <label class="field-label">Principais objetivos e conceitos da sua marca <span class="req">*</span></label>
+  <p class="field-hint">Informe os principais objetivos ou conceitos que melhor representam sua marca e que você gostaria de incorporar nos designs. Por exemplo: <em>Moderno, Luxuoso, Minimalista, Jovem, Sério, Tecnológico, Acolhedor, Dinâmico, Profissional...</em></p>
+  <textarea id="conceitos" placeholder="Ex: Minha marca é voltada para empreendedores. Quero um visual moderno, ousado e tecnológico. As cores da marca são roxo e branco. O público é adulto e busca crescimento profissional..."></textarea>
+
+  <label class="field-label">Referências visuais que você admira (opcional)</label>
+  <p class="field-hint">Se você tiver referências visuais de outros sites ou marcas que você gosta do ponto de vista estético, informe os links aqui. Não precisa ser do mesmo segmento — pode ser qualquer site cujo visual você considere bonito ou alinhado com o que busca.</p>
+  <input type="text" id="referencias" placeholder="Ex: https://site1.com, https://site2.com.br">
+
+  <label class="field-label">Material gráfico existente — link do Drive (opcional)</label>
+  <p class="field-hint">Se você já possui materiais gráficos da sua marca (folhetos, cartões de visita, apresentações, posts de redes sociais etc.), compartilhe o link do Google Drive ou Dropbox com esses arquivos. Isso nos ajuda a manter coerência com o que você já usa. Certifique-se de que o link está com acesso liberado para "qualquer pessoa com o link".</p>
+  <input type="url" id="materialGrafico" placeholder="https://drive.google.com/drive/folders/...">
+
+  <label class="field-label">Logotipo — link do Drive (opcional)</label>
+  <p class="field-hint">Se disponível, nos envie o link do Google Drive com o arquivo do seu logotipo. De preferência em formato vetorial (AI, EPS ou SVG) ou em alta resolução (PNG com fundo transparente). Caso não tenha o arquivo agora, não se preocupe — nossa equipe entrará em contato.</p>
+  <input type="url" id="logoLink" placeholder="https://drive.google.com/file/d/...">
+</div>
+
+<!-- STEP 6 -->
+<div class="card hidden" id="step6">
+  <div class="card-icon">🖼️</div>
+  <h2>Imagens e identidade de cores</h2>
+  <p class="desc">Essas informações garantem que os designs sejam criados com o visual perfeito para a sua marca. Quanto mais detalhes você fornecer, melhor será o resultado.</p>
+
+  <div class="section-title">Banco de Imagens <span class="req">*</span></div>
+  <p class="field-hint" style="margin-top:0;margin-bottom:12px">Caso você não tenha imagens específicas para o design, temos acesso a um banco de imagens profissional, garantindo que sejam de alta qualidade e adequadas ao seu projeto. Selecione a opção que melhor se aplica ao seu caso:</p>
+  <div class="options-grid">
+    <div class="opt-btn" onclick="selectOpt('imagens','proprias',this)"><span class="opt-dot"></span>
+      <div><div style="font-weight:700">Disponho das imagens prontas</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Tenho fotos e vou enviar o link</div></div>
+    </div>
+    <div class="opt-btn" onclick="selectOpt('imagens','banco',this)"><span class="opt-dot"></span>
+      <div><div style="font-weight:700">Utilização de Banco de Imagens</div><div style="font-size:12px;color:var(--muted);margin-top:2px">A equipe EAD escolhe para mim</div></div>
+    </div>
+  </div>
+
+  <label class="field-label">Link do Google Drive com suas fotos (se tiver)</label>
+  <p class="field-hint">Se você tiver imagens ou fotos próprias que deseja usar nos designs, compartilhe o link da pasta do Google Drive. Certifique-se de que o link está com permissão de acesso para "Qualquer pessoa com o link pode visualizar".</p>
+  <input type="url" id="driveImagens" placeholder="https://drive.google.com/drive/folders/...">
+
+  <label class="field-label">Preferências de imagem (opcional)</label>
+  <p class="field-hint">Se tiver preferências específicas quanto às imagens a serem incluídas nos designs, informe-nos. Por exemplo: se prefere fotos com pessoas, ambientes, objetos, estilo de fotografia etc.</p>
+  <textarea id="prefsImagem" placeholder="Ex: Prefiro fotos com pessoas sorridentes, ambiente corporativo moderno. Gosto de imagens com iluminação quente..."></textarea>
+
+  <label class="field-label">Restrições visuais <span class="req">*</span></label>
+  <p class="field-hint">Há algum elemento visual que você NÃO gostaria que fosse incluído no design? Por exemplo: evitar imagens com determinadas faixas etárias, profissionais usando certos acessórios, cores específicas, entre outros detalhes. Caso não tenha restrições, basta responder: <em>Não tenho restrições.</em></p>
+  <textarea id="restricoes" placeholder="Ex: Evitar imagens com crianças. Não usar a cor verde. Não usar imagens muito informais.&#10;Ou escreva: Não tenho restrições."></textarea>
+
+  <label class="field-label">Cores da identidade visual <span class="req">*</span></label>
+  <p class="field-hint">Indique as cores da sua marca que devem ser utilizadas nos designs. Se possível, forneça os códigos de cores (HEX ou RGB). Se não souber os códigos, descreva as cores com palavras — ex: <em>azul royal, dourado e branco.</em></p>
+  <textarea id="cores" placeholder="Ex: Roxo: #7c038e | Magenta: #fe00fe | Branco: #ffffff&#10;Ou descreva: azul escuro, laranja vibrante e branco."></textarea>
+</div>
+
+<!-- STEP 7 -->
+<div class="card hidden" id="step7">
+  <div class="card-icon">🎁</div>
+  <h2>Quase lá! Mais um detalhe.</h2>
+  <p class="desc">Disponibilizamos um <strong>ícone personalizado para o WhatsApp</strong> como brinde! Por gentileza, informe o seu número de WhatsApp para que possamos proceder com a personalização.</p>
+
+  <label class="field-label">Número de WhatsApp para o brinde <span class="req">*</span></label>
+  <p class="field-hint">Informe o número de WhatsApp que deseja usar para o ícone personalizado. Esse número será usado apenas para o brinde.</p>
+  <input type="tel" id="whatsapp" placeholder="(00) 00000-0000">
+
+  <label class="field-label" style="margin-top:24px">Observações adicionais</label>
+  <p class="field-hint">Caso haja qualquer outra informação ou consideração importante que não tenha sido abordada acima, por favor, inclua-a aqui. Quanto mais detalhes, melhor para nossa equipe de design!</p>
+  <textarea id="observacoes" placeholder="Ex: Minha plataforma é voltada para alunos do ensino médio. Tenho dúvidas sobre o modelo de certificado. Gostaria que o banner tivesse uma frase motivacional..."></textarea>
+
+  <div class="hint-box purple" style="margin-top:22px">
+    ✅ <strong>Após o envio,</strong> nossa equipe analisará todas as informações e entrará em contato em até <strong>1 dia útil</strong> para confirmar os detalhes, solicitar arquivos adicionais se necessário (logotipo em alta, fotos etc.) e dar início ao desenvolvimento do seu design.
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="card hidden" id="stepSuccess">
+  <div class="success-wrap">
+    <div class="success-icon">✓</div>
+    <h2>Formulário Enviado!</h2>
+    <p>Recebemos todas as suas informações com sucesso. Nossa equipe de design entrará em contato em breve para dar início ao seu projeto. Coisas boas estão vindo e pode ser café! ☕🚀</p>
+  </div>
+</div>
+
+<div class="nav-wrap" id="navWrap">
+  <button class="btn btn-back" id="btnBack" onclick="goBack()">← Voltar</button>
+  <button class="btn btn-next" id="btnNext" onclick="goNext()">Continuar →</button>
+</div>
+
+<script>
+  const totalSteps = 7;
+  let current = 1;
+  const stepLabels = ['Identificação','Escolha das Artes','Textos das Artes','Tema e Login','Marca e Referências','Imagens e Cores','Finalização'];
+  const optsState = {};
+  let artesTotals = {};
+  let animadaSelecionada = null;
+
+  function showStep(n) {
+    for (let i = 1; i <= totalSteps; i++) document.getElementById('step'+i).classList.add('hidden');
+    document.getElementById('stepSuccess').classList.add('hidden');
+    if (n > totalSteps) {
+      document.getElementById('stepSuccess').classList.remove('hidden');
+      document.getElementById('navWrap').classList.add('hidden');
+      document.getElementById('stepLabel').textContent = 'Concluído!';
+      document.getElementById('stepCount').textContent = '';
+      document.getElementById('progressBar').style.width = '100%';
+      return;
+    }
+    const el = document.getElementById('step'+n);
+    el.classList.remove('hidden');
+    el.style.animation = 'none';
+    setTimeout(() => { el.style.animation = ''; }, 10);
+    document.getElementById('stepLabel').textContent = stepLabels[n-1];
+    document.getElementById('stepCount').textContent = 'Etapa '+n+' de '+totalSteps;
+    document.getElementById('progressBar').style.width = Math.round((n/totalSteps)*100)+'%';
+    document.getElementById('btnBack').style.visibility = n===1 ? 'hidden' : 'visible';
+    const btn = document.getElementById('btnNext');
+    if (n === totalSteps) { btn.textContent = 'Enviar formulário ✓'; btn.className = 'btn btn-submit'; }
+    else { btn.textContent = 'Continuar →'; btn.className = 'btn btn-next'; }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function goNext() {
+    if (!validateStep(current)) return;
+    if (current === totalSteps) { await submitForm(); return; }
+    current++; showStep(current);
+  }
+
+  function goBack() { if (current > 1) { current--; showStep(current); } }
+
+  function validateStep(n) {
+    if (n===1) {
+      if (!document.getElementById('nome').value.trim() || !document.getElementById('dominio').value.trim() || !document.getElementById('telefone').value.trim()) {
+        alert('Por favor, preencha os campos obrigatórios: Nome, Domínio da Plataforma e Telefone de Contato.');
+        return false;
+      }
+    }
+    if (n===2) {
+      if (animadaSelecionada === null) {
+        alert('Por favor, selecione se deseja a arte animada ou manter as artes livres normais.');
+        return false;
+      }
+    }
+    if (n===3) {
+      if (!document.getElementById('textos').value.trim()) {
+        alert('Por favor, informe os textos que devem aparecer nas artes. Sem esse preenchimento não poderemos iniciar o desenvolvimento do design.');
+        return false;
+      }
+    }
+    if (n===4) {
+      if (!optsState['tema']) { alert('Por favor, selecione o tema da plataforma (Padrão ou Netflix).'); return false; }
+      if (!optsState['login']) { alert('Por favor, selecione o modelo da tela de login (Central ou Lateral).'); return false; }
+    }
+    if (n===5) {
+      if (!document.getElementById('conceitos').value.trim()) {
+        alert('Por favor, descreva os principais objetivos e conceitos da sua marca.');
+        return false;
+      }
+    }
+    if (n===6) {
+      if (!optsState['imagens']) { alert('Por favor, selecione a opção de imagens (próprias ou banco de imagens).'); return false; }
+      if (!document.getElementById('restricoes').value.trim()) { alert('Por favor, preencha as restrições visuais (ou escreva "Não tenho restrições").'); return false; }
+      if (!document.getElementById('cores').value.trim()) { alert('Por favor, informe as cores da sua identidade visual.'); return false; }
+    }
+    if (n===7) {
+      if (!document.getElementById('whatsapp').value.trim()) {
+        alert('Por favor, informe seu número de WhatsApp para receber o brinde.');
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function selectOpt(group, value, el) {
+    optsState[group] = value;
+    el.parentElement.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function selectAnimada(valor, el) {
+    animadaSelecionada = valor;
+    el.parentElement.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    const section = document.getElementById('artesLivresSection');
+    if (valor === 'sim') {
+      section.classList.add('locked');
+      artesTotals = {};
+      ['Banner de produto','Capa de produto','Capa de produto – card','Capa de curso','Banner de categoria','Capa de aula extra'].forEach(k => {
+        const v = document.getElementById('val-'+k);
+        if (v) v.textContent = '0';
+      });
+      document.getElementById('artesTotal').textContent = '0 / 3';
+      const d = document.getElementById('artes-total-display');
+      d.style.background = '#f5eeff'; d.style.color = 'var(--violeta)';
+    } else {
+      section.classList.remove('locked');
+    }
+  }
+
+  function changeArte(nome, delta) {
+    if (!artesTotals[nome]) artesTotals[nome] = 0;
+    const total = Object.values(artesTotals).reduce((a,b)=>a+b,0);
+    const newVal = artesTotals[nome] + delta;
+    if (newVal < 0) return;
+    if (delta > 0 && total >= 3) { alert('Você já selecionou o máximo de 3 artes livres.'); return; }
+    artesTotals[nome] = newVal;
+    document.getElementById('val-'+nome).textContent = newVal;
+    const newTotal = Object.values(artesTotals).reduce((a,b)=>a+b,0);
+    document.getElementById('artesTotal').textContent = newTotal+' / 3';
+    const d = document.getElementById('artes-total-display');
+    d.style.background = newTotal===3 ? '#e0ffee' : '#f5eeff';
+    d.style.color = newTotal===3 ? '#0a7a3c' : 'var(--violeta)';
+  }
+
+  async function submitForm() {
+    const btn = document.getElementById('btnNext');
+    btn.textContent = 'Enviando...'; btn.disabled = true;
+    const artesLivres = Object.entries(artesTotals).filter(([,v])=>v>0).map(([k,v])=>v+'x '+k).join(', ') || 'Nenhuma';
+    const data = {
+      access_key: '5640db5b-12ce-433c-9d88-44115c8d07ee',
+      subject: 'Novo formulário de design – EAD Plataforma',
+      from_name: 'Formulário EAD Plataforma',
+      email: 'thiago1miedes@gmail.com',
+      'Nome completo': document.getElementById('nome').value,
+      'Domínio da plataforma': document.getElementById('dominio').value,
+      'Site próprio': document.getElementById('site').value || 'Não informado',
+      'Telefone': document.getElementById('telefone').value,
+      'Arte animada': animadaSelecionada==='sim' ? 'Sim — trocou artes livres por animada' : 'Não — manteve artes livres',
+      'Artes livres selecionadas': animadaSelecionada==='sim' ? 'N/A (optou por arte animada)' : artesLivres,
+      'Textos das artes': document.getElementById('textos').value,
+      'Tema da plataforma': optsState['tema']==='netflix' ? 'Netflix' : 'Padrão',
+      'Tela de login': optsState['login']==='central' ? 'Central' : 'Lateral (padrão)',
+      'Conceitos da marca': document.getElementById('conceitos').value,
+      'Referências visuais': document.getElementById('referencias').value || 'Não informado',
+      'Material gráfico (Drive)': document.getElementById('materialGrafico').value || 'Não informado',
+      'Logotipo (Drive)': document.getElementById('logoLink').value || 'Não informado',
+      'Banco de imagens': optsState['imagens']==='proprias' ? 'Imagens próprias' : 'Banco de imagens EAD',
+      'Fotos (Drive)': document.getElementById('driveImagens').value || 'Não informado',
+      'Preferências de imagem': document.getElementById('prefsImagem').value || 'Não informado',
+      'Restrições visuais': document.getElementById('restricoes').value,
+      'Cores da marca': document.getElementById('cores').value,
+      'WhatsApp (brinde)': document.getElementById('whatsapp').value,
+      'Observações adicionais': document.getElementById('observacoes').value || 'Nenhuma'
+    };
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const json = await res.json();
+      if (json.success) { current = totalSteps+1; showStep(current); }
+      else throw new Error(json.message || 'Erro desconhecido');
+    } catch(err) {
+      btn.textContent = 'Enviar formulário ✓'; btn.disabled = false;
+      alert('Ocorreu um erro ao enviar. Verifique sua conexão e tente novamente.\n\nDetalhes: '+err.message);
+    }
+  }
+
+  showStep(1);
+</script>
+</body>
+</html>
