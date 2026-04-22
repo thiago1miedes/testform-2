@@ -585,42 +585,39 @@
     const btn = document.getElementById('btnNext');
     btn.textContent = 'Enviando...'; btn.disabled = true;
     const artesLivres = Object.entries(artesTotals).filter(([,v])=>v>0).map(([k,v])=>v+'x '+k).join(', ') || 'Nenhuma';
-    const data = {
-      access_key: '1efda124-052f-4fe9-9653-3cde4072634a',
-      subject: 'Novo formulário de design – EAD Plataforma',
-      from_name: 'Formulário EAD Plataforma',
-      email: 'thiago1miedes@gmail.com',
-      botcheck: '',
-      'Nome completo': document.getElementById('nome').value,
-      'Domínio da plataforma': document.getElementById('dominio').value,
-      'Site próprio': document.getElementById('site').value || 'Não informado',
-      'Telefone': document.getElementById('telefone').value,
-      'Arte animada': animadaSelecionada==='sim' ? 'Sim — trocou artes livres por animada' : 'Não — manteve artes livres',
-      'Artes livres selecionadas': animadaSelecionada==='sim' ? 'N/A (optou por arte animada)' : artesLivres,
-      'Textos das artes': document.getElementById('textos').value,
-      'Tema da plataforma': optsState['tema']==='netflix' ? 'Netflix' : 'Padrão',
-      'Tela de login': optsState['login']==='central' ? 'Central' : 'Lateral (padrão)',
-      'Conceitos da marca': document.getElementById('conceitos').value,
-      'Referências visuais': document.getElementById('referencias').value || 'Não informado',
-      'Material gráfico (Drive)': document.getElementById('materialGrafico').value || 'Não informado',
-      'Logotipo (Drive)': document.getElementById('logoLink').value || 'Não informado',
-      'Banco de imagens': optsState['imagens']==='proprias' ? 'Imagens próprias' : 'Banco de imagens EAD',
-      'Fotos (Drive)': document.getElementById('driveImagens').value || 'Não informado',
-      'Preferências de imagem': document.getElementById('prefsImagem').value || 'Não informado',
-      'Restrições visuais': document.getElementById('restricoes').value,
-      'Cores da marca': document.getElementById('cores').value,
-      'WhatsApp (brinde)': document.getElementById('whatsapp').value,
-      'Observações adicionais': document.getElementById('observacoes').value || 'Nenhuma'
-    };
+    const body = new FormData();
+    body.append('_to', 'thiago1miedes@gmail.com');
+    body.append('_subject', 'Novo formulário de design – EAD Plataforma');
+    body.append('_template', 'table');
+    body.append('_captcha', 'false');
+    body.append('Nome completo', document.getElementById('nome').value);
+    body.append('Domínio da plataforma', document.getElementById('dominio').value);
+    body.append('Site próprio', document.getElementById('site').value || 'Não informado');
+    body.append('Telefone', document.getElementById('telefone').value);
+    body.append('Arte animada', animadaSelecionada==='sim' ? 'Sim — trocou artes livres por animada' : 'Não — manteve artes livres');
+    body.append('Artes livres selecionadas', animadaSelecionada==='sim' ? 'N/A (optou por arte animada)' : artesLivres);
+    body.append('Textos das artes', document.getElementById('textos').value);
+    body.append('Tema da plataforma', optsState['tema']==='netflix' ? 'Netflix' : 'Padrão');
+    body.append('Tela de login', optsState['login']==='central' ? 'Central' : 'Lateral (padrão)');
+    body.append('Conceitos da marca', document.getElementById('conceitos').value);
+    body.append('Referências visuais', document.getElementById('referencias').value || 'Não informado');
+    body.append('Material gráfico (Drive)', document.getElementById('materialGrafico').value || 'Não informado');
+    body.append('Logotipo (Drive)', document.getElementById('logoLink').value || 'Não informado');
+    body.append('Banco de imagens', optsState['imagens']==='proprias' ? 'Imagens próprias' : 'Banco de imagens EAD');
+    body.append('Fotos (Drive)', document.getElementById('driveImagens').value || 'Não informado');
+    body.append('Preferências de imagem', document.getElementById('prefsImagem').value || 'Não informado');
+    body.append('Restrições visuais', document.getElementById('restricoes').value);
+    body.append('Cores da marca', document.getElementById('cores').value);
+    body.append('WhatsApp (brinde)', document.getElementById('whatsapp').value);
+    body.append('Observações adicionais', document.getElementById('observacoes').value || 'Nenhuma');
+
     try {
-      const res = await fetch('https://api.web3forms.com/submit', {
+      const res = await fetch('https://formsubmit.co/thiago1miedes@gmail.com', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify(data)
+        body: body
       });
-      const json = await res.json();
-      if (json.success) { current = totalSteps+1; showStep(current); }
-      else throw new Error(json.message || 'Erro desconhecido');
+      if (res.ok) { current = totalSteps+1; showStep(current); }
+      else throw new Error('Erro HTTP ' + res.status);
     } catch(err) {
       btn.textContent = 'Enviar formulário ✓'; btn.disabled = false;
       alert('Ocorreu um erro ao enviar. Verifique sua conexão e tente novamente.\n\nDetalhes: '+err.message);
