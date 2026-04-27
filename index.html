@@ -860,6 +860,9 @@
 </div>
 
 <script>
+  // Configuração da URL do Google Apps Script
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzoeqZakaU3YDTH00hL2Ya3bNnNcluqvdWH18ATbMnPIidrHbdG7hRas_Xgizv5E2HG/exec';
+  
   const totalSteps = 7;
   let current = 1;
   const stepLabels = ['Identificação','Escolha das Artes','Textos das Artes','Tema e Login','Marca e Referências','Imagens e Cores','Finalização'];
@@ -1074,41 +1077,37 @@
     const artesLivres = Object.entries(artesTotals).filter(([,v])=>v>0).map(([k,v])=>v+'x '+k).join(', ') || 'Nenhuma';
     
     const formData = new FormData();
-    formData.append('_to', 'thiago1miedes@gmail.com');
-    formData.append('_subject', 'Novo formulário de design – EAD Plataforma');
-    formData.append('_template', 'table');
-    formData.append('_captcha', 'false');
     
     // Text fields
-    formData.append('Nome completo', document.getElementById('nome').value);
-    formData.append('Domínio da plataforma', document.getElementById('dominio').value);
-    formData.append('Site próprio', document.getElementById('site').value || 'Não informado');
-    formData.append('Telefone', document.getElementById('telefone').value);
-    formData.append('Arte animada', animadaSelecionada==='sim' ? 'Sim — optou por arte animada (limite 1)' : 'Não — artes livres normais (limite 3)');
-    formData.append('Artes selecionadas', artesLivres);
-    formData.append('Texto Banner Principal', document.getElementById('texto-banner-principal').value);
-    formData.append('Texto Tela de Login', document.getElementById('texto-login').value);
-    formData.append('Texto Capa de Aula', document.getElementById('texto-capa-aula').value);
-    formData.append('Texto Certificado', document.getElementById('texto-certificado').value);
-    formData.append('Ícones de Categoria', document.getElementById('texto-categorias').value);
-    formData.append('Textos artes livres', document.getElementById('textos').value || 'Não informado');
-    formData.append('Tema da plataforma', optsState['tema']==='netflix' ? 'Netflix' : 'Padrão');
-    formData.append('Tela de login', optsState['login']==='central' ? 'Central' : 'Lateral (padrão)');
-    formData.append('Conceitos da marca', document.getElementById('conceitos').value);
-    formData.append('Referências visuais', document.getElementById('referencias').value || 'Não informado');
-    formData.append('Banco de imagens', optsState['imagens']==='proprias' ? 'Imagens próprias' : 'Banco de imagens EAD');
-    formData.append('Preferências de imagem', document.getElementById('prefsImagem').value || 'Não informado');
-    formData.append('Restrições visuais', document.getElementById('restricoes').value);
-    formData.append('Cores da marca', document.getElementById('cores').value);
-    formData.append('Brinde WhatsApp', document.getElementById('whatsapp').value || 'Não informado');
-    formData.append('Observações adicionais', document.getElementById('observacoes').value || 'Nenhuma');
+    formData.append('nome_completo', document.getElementById('nome').value);
+    formData.append('dominio_plataforma', document.getElementById('dominio').value);
+    formData.append('site_proprio', document.getElementById('site').value || 'Não informado');
+    formData.append('telefone', document.getElementById('telefone').value);
+    formData.append('arte_animada', animadaSelecionada==='sim' ? 'Sim — optou por arte animada (limite 1)' : 'Não — artes livres normais (limite 3)');
+    formData.append('artes_selecionadas', artesLivres);
+    formData.append('texto_banner_principal', document.getElementById('texto-banner-principal').value);
+    formData.append('texto_tela_login', document.getElementById('texto-login').value);
+    formData.append('texto_capa_aula', document.getElementById('texto-capa-aula').value);
+    formData.append('texto_certificado', document.getElementById('texto-certificado').value);
+    formData.append('icones_categoria', document.getElementById('texto-categorias').value);
+    formData.append('textos_artes_livres', document.getElementById('textos').value || 'Não informado');
+    formData.append('tema_plataforma', optsState['tema']==='netflix' ? 'Netflix' : 'Padrão');
+    formData.append('tela_login', optsState['login']==='central' ? 'Central' : 'Lateral (padrão)');
+    formData.append('conceitos_marca', document.getElementById('conceitos').value);
+    formData.append('referencias_visuais', document.getElementById('referencias').value || 'Não informado');
+    formData.append('banco_imagens', optsState['imagens']==='proprias' ? 'Imagens próprias' : 'Banco de imagens EAD');
+    formData.append('preferencias_imagem', document.getElementById('prefsImagem').value || 'Não informado');
+    formData.append('restricoes_visuais', document.getElementById('restricoes').value);
+    formData.append('cores_marca', document.getElementById('cores').value);
+    formData.append('brinde_whatsapp', document.getElementById('whatsapp').value || 'Não informado');
+    formData.append('observacoes_adicionais', document.getElementById('observacoes').value || 'Nenhuma');
     
     // Append files
     if (uploadedFiles.material && uploadedFiles.material.length > 0) {
       uploadedFiles.material.forEach((file, i) => {
         formData.append(`material_grafico_${i}`, file);
       });
-      formData.append('Quantidade_material_grafico', uploadedFiles.material.length);
+      formData.append('quantidade_material_grafico', uploadedFiles.material.length);
     }
     
     if (uploadedFiles.logo) {
@@ -1119,19 +1118,26 @@
       uploadedFiles.fotos.forEach((file, i) => {
         formData.append(`fotos_${i}`, file);
       });
-      formData.append('Quantidade_fotos', uploadedFiles.fotos.length);
+      formData.append('quantidade_fotos', uploadedFiles.fotos.length);
     }
 
     try {
-      const res = await fetch('https://formsubmit.co/thiago1miedes@gmail.com', {
+      const res = await fetch(SCRIPT_URL, {
         method: 'POST',
         body: formData
       });
-      if (res.ok) { current = totalSteps+1; showStep(current); }
-      else throw new Error('Erro HTTP ' + res.status);
+      
+      if (res.ok) { 
+        current = totalSteps + 1; 
+        showStep(current); 
+      } else {
+        const errorText = await res.text();
+        throw new Error('Erro HTTP ' + res.status + ': ' + errorText);
+      }
     } catch(err) {
-      btn.textContent = 'Enviar formulário'; btn.disabled = false;
-      alert('Ocorreu um erro ao enviar. Verifique sua conexão e tente novamente.\n\nDetalhes: '+err.message);
+      btn.textContent = 'Enviar formulário'; 
+      btn.disabled = false;
+      alert('Ocorreu um erro ao enviar. Verifique sua conexão e tente novamente.\n\nDetalhes: ' + err.message);
     }
   }
 
